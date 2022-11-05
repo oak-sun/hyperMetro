@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="Tests" tests="1" skipped="0" failures="0" errors="0" timestamp="2022-11-05T15:35:12" hostname="ooo-X550EA" time="1.377">
+<testsuite name="Tests" tests="1" skipped="0" failures="0" errors="0" timestamp="2022-11-05T16:49:08" hostname="ooo-X550EA" time="2.182">
   <properties/>
-  <testcase name="start" classname="Tests" time="1.377"/>
+  <testcase name="start" classname="Tests" time="2.182"/>
   <system-out><![CDATA[?[1;31m
 Start test 1?[0m
+> /output "SubwayLink"
 depot - Owings Mills - Old Court
 Owings Mills - Old Court - Milford Mill
 Old Court - Milford Mill - Reiserstown Plaza
@@ -20,11 +21,103 @@ Charles Center - Shot Tower/Market Place - Johns Hopkins Hospital
 Shot Tower/Market Place - Johns Hopkins Hospital - depot
 ?[1;31m
 Start test 2?[0m
+> /output "m1"
+depot - Renes—Gare - Epenex
+Renes—Gare - Epenex - Crochy
+Epenex - Crochy - Cerisaie
+Crochy - Cerisaie - Bassenges
+Cerisaie - Bassenges - EPFL
+Bassenges - EPFL - UNL—Sorge
+EPFL - UNL—Sorge - Mouline
+UNL—Sorge - Mouline - UNL—Chemberonne
+Mouline - UNL—Chemberonne - Bourdonnette
+UNL—Chemberonne - Bourdonnette - Melley
+Bourdonnette - Melley - Provence
+Melley - Provence - Montelly
+Provence - Montelly - Vigie
+Montelly - Vigie - Lausanne—Flon
+Vigie - Lausanne—Flon - depot
+> /output "m2"
+depot - Croisettes - Vennes
+Croisettes - Vennes - Fourmi
+Vennes - Fourmi - Sallaz
+Fourmi - Sallaz - CHUV
+Sallaz - CHUV - Ours
+CHUV - Ours - Riponne M.Bejart
+Ours - Riponne M.Bejart - Bessieres
+Riponne M.Bejart - Bessieres - Lausanne—Flon
+Bessieres - Lausanne—Flon - Lausanne Gare CFF
+Lausanne—Flon - Lausanne Gare CFF - Grancy
+Lausanne Gare CFF - Grancy - Delices
+Grancy - Delices - Jourdils
+Delices - Jourdils - Ouchy—Olympique
+Jourdils - Ouchy—Olympique - depot
 ?[1;31m
 Start test 3?[0m
-Error: No file found: tHiS_fIlE_DoEs_nOt_ExIsT.txt
+> /append "m1" "Test station 1"
+> /output "m1"
+depot - Renes—Gare - Epenex
+Renes—Gare - Epenex - Crochy
+Epenex - Crochy - Cerisaie
+Crochy - Cerisaie - Bassenges
+Cerisaie - Bassenges - EPFL
+Bassenges - EPFL - UNL—Sorge
+EPFL - UNL—Sorge - Mouline
+UNL—Sorge - Mouline - UNL—Chemberonne
+Mouline - UNL—Chemberonne - Bourdonnette
+UNL—Chemberonne - Bourdonnette - Melley
+Bourdonnette - Melley - Provence
+Melley - Provence - Montelly
+Provence - Montelly - Vigie
+Montelly - Vigie - Lausanne—Flon
+Vigie - Lausanne—Flon - Test station 1
+Lausanne—Flon - Test station 1 - depot
+> /append "m1" "Test station 2"
+> /output "m1"
+depot - Renes—Gare - Epenex
+Renes—Gare - Epenex - Crochy
+Epenex - Crochy - Cerisaie
+Crochy - Cerisaie - Bassenges
+Cerisaie - Bassenges - EPFL
+Bassenges - EPFL - UNL—Sorge
+EPFL - UNL—Sorge - Mouline
+UNL—Sorge - Mouline - UNL—Chemberonne
+Mouline - UNL—Chemberonne - Bourdonnette
+UNL—Chemberonne - Bourdonnette - Melley
+Bourdonnette - Melley - Provence
+Melley - Provence - Montelly
+Provence - Montelly - Vigie
+Montelly - Vigie - Lausanne—Flon
+Vigie - Lausanne—Flon - Test station 1
+Lausanne—Flon - Test station 1 - Test station 2
+Test station 1 - Test station 2 - depot
+> /add-head "m1" "Head"
+> /output "m1"
+depot - Head - Renes—Gare
+Head - Renes—Gare - Epenex
+Renes—Gare - Epenex - Crochy
+Epenex - Crochy - Cerisaie
+Crochy - Cerisaie - Bassenges
+Cerisaie - Bassenges - EPFL
+Bassenges - EPFL - UNL—Sorge
+EPFL - UNL—Sorge - Mouline
+UNL—Sorge - Mouline - UNL—Chemberonne
+Mouline - UNL—Chemberonne - Bourdonnette
+UNL—Chemberonne - Bourdonnette - Melley
+Bourdonnette - Melley - Provence
+Melley - Provence - Montelly
+Provence - Montelly - Vigie
+Montelly - Vigie - Lausanne—Flon
+Vigie - Lausanne—Flon - Test station 1
+Lausanne—Flon - Test station 1 - Test station 2
+Test station 1 - Test station 2 - depot
 ?[1;31m
 Start test 4?[0m
+Error! Such a file doesn't exist!
+?[1;31m
+Start test 5?[0m
+> /append "line 1" "Krylya Sovetov"
+> /output "line 1"
 depot - Alabinskaya - Rossiyskaya
 Alabinskaya - Rossiyskaya - Moskovskaya
 Rossiyskaya - Moskovskaya - Gagarinskaya
@@ -34,7 +127,22 @@ Sportivnaya - Sovetskaya - Pobeda
 Sovetskaya - Pobeda - Bezymyanka
 Pobeda - Bezymyanka - Kirovskaya
 Bezymyanka - Kirovskaya - Yungorodok
-Kirovskaya - Yungorodok - depot
+Kirovskaya - Yungorodok - Krylya Sovetov
+Yungorodok - Krylya Sovetov - depot
+> /add-head "line 1" Samarskaya
+> /output "line 1"
+depot - Samarskaya - Alabinskaya
+Samarskaya - Alabinskaya - Rossiyskaya
+Alabinskaya - Rossiyskaya - Moskovskaya
+Rossiyskaya - Moskovskaya - Gagarinskaya
+Moskovskaya - Gagarinskaya - Sportivnaya
+Gagarinskaya - Sportivnaya - Sovetskaya
+Sportivnaya - Sovetskaya - Pobeda
+Sovetskaya - Pobeda - Bezymyanka
+Pobeda - Bezymyanka - Kirovskaya
+Bezymyanka - Kirovskaya - Yungorodok
+Kirovskaya - Yungorodok - Krylya Sovetov
+Yungorodok - Krylya Sovetov - depot
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
