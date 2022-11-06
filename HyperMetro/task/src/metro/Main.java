@@ -1,8 +1,5 @@
 package metro;
 
-import com.google.gson.JsonParser;
-
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -11,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+import com.google.gson.JsonParser;
+import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
@@ -18,7 +17,7 @@ public class Main {
     }
 
     private static Optional<LinkedHashMap<String, SubwayController>>
-                                             loadMap(String path) {
+                                                loadMap(String path) {
         var file = Paths.get(path);
         if (Files.notExists(file)) {
             System.out.println(
@@ -26,58 +25,55 @@ public class Main {
             return Optional.empty();
         } else {
             try {
-                var br =
-                        Files.newBufferedReader(file);
-                var jsO =
-                        JsonParser.parseReader(br).getAsJsonObject();
+                var br = Files.newBufferedReader(file);
+                var jsO = JsonParser
+                                        .parseReader(br)
+                                        .getAsJsonObject();
                 LinkedHashMap<String, SubwayController> lineMap =
                         new LinkedHashMap<>();
-                ArrayList<String[]> transfersList =
-                        new ArrayList<>();
+                ArrayList<String[]> transList = new ArrayList<>();
                 for (var obj: jsO.entrySet()) {
-                    var line =
-                            obj.getKey().replace("\"", "");
+                    var line = obj
+                            .getKey()
+                            .replace("\"", "");
                     var controller = new SubwayController(line);
-                    for (var e : obj
+                    for (var st : obj
                             .getValue()
                             .getAsJsonObject()
                             .entrySet()) {
-                        var station = e
-                                .getValue()
-                                .getAsJsonObject()
-                                .getAsJsonPrimitive("name")
-                                .getAsString()
-                                .replace("\"", "");
+                        var station = st
+                                     .getValue()
+                                     .getAsJsonObject()
+                                     .getAsJsonPrimitive("name")
+                                    .getAsString()
+                                    .replace("\"", "");
                         controller.append(station);
-                        var transfer = e
-                                .getValue()
-                                .getAsJsonObject()
-                                .getAsJsonArray("transfer");
+                        var transfer = st
+                                      .getValue()
+                                      .getAsJsonObject()
+                                      .getAsJsonArray("transfer");
                         if (transfer.size() != 0) {
-                            var transferLine = transfer
-                                    .get(0)
-                                    .getAsJsonObject()
-                                    .get("line")
-                                    .getAsString()
-                                    .replace("\"", "");
-                            var transferSt = transfer
-                                    .get(0)
-                                    .getAsJsonObject()
-                                    .get("station")
-                                    .getAsString()
-                                    .replace("\"", "");
-                            transfersList.add(new String[]{
+                            transList.add(new String[]{
                                     line,
                                     station,
-                                    transferLine,
-                                    transferSt});
+                                    transfer
+                                            .get(0)
+                                            .getAsJsonObject()
+                                            .get("line")
+                                            .getAsString()
+                                            .replace("\"", ""),
+                                    transfer
+                                            .get(0)
+                                            .getAsJsonObject()
+                                            .get("station")
+                                            .getAsString()
+                                            .replace("\"", "")});
                         }
                     }
                     lineMap.put(line, controller);
                 }
-                for (String[] data : transfersList) {
-                    lineMap.get(data[0]).addTransfer(
-                            data[1],
+                for (String[] data : transList) {
+                    lineMap.get(data[0]).addTransfer(data[1],
                             lineMap.get(data[2]),
                             data[3]);
                 }
@@ -96,6 +92,7 @@ public class Main {
             if ("/exit".equals(input)) {
                 break;
             } else {
+
                 List<String> parseList = new ArrayList<>();
                 var m = Pattern
                         .compile("([^\"]\\S*|\".+?\")\\s*")
@@ -108,21 +105,21 @@ public class Main {
                 if (commands.length == 2 &&
                         "/output".equals(commands[0])) {
                     if (lineMap.containsKey(commands[1])) {
-                        lineMap.get(commands[1]).print();
+                        lineMap.get(commands[1]).printLine();
                     } else {
                         System.out.println("Invalid command.");
                     }
                 } else if (commands.length == 3 &&
                         lineMap.containsKey(commands[1])) {
-                    var line = lineMap.get(commands[1]);
+                    var controller = lineMap.get(commands[1]);
                     switch (commands[0]) {
                         case "/append" ->
-                                line.append(commands[2]);
+                                controller.append(commands[2]);
                         case "/add-head" ->
-                                line.addHead(commands[2]);
+                                controller.addHead(commands[2]);
                         case "/remove" ->
                         {
-                            if (!line.remove(commands[2])) {
+                            if (!controller.remove(commands[2])) {
                                 System.out.println(
                                         "Invalid command.");
                             }
@@ -131,20 +128,29 @@ public class Main {
                                 "Invalid command.");
                     }
                 } else if (commands.length == 5
-                        && "/connect".equals(commands[0])
+                        && ("/connect".equals(commands[0])
+                        || "/route".equals(commands[0]))
                         && lineMap.containsKey(commands[1])
                         && lineMap.containsKey(commands[3])) {
                     var contr1 = lineMap.get(commands[1]);
                     var contr2 = lineMap.get(commands[3]);
-                    contr1.addTransfer(
-                            commands[2],
-                            contr2,
-                            commands[4]);
-                    contr2.addTransfer(
-                            commands[4],
-                            contr1,
-                            commands[2]);
-
+                    if ("/connect".equals(commands[0])) {
+                        contr1.addTransfer(
+                                commands[2],
+                                contr2,
+                                commands[4]);
+                        contr2.addTransfer(
+                                commands[4],
+                                contr1,
+                                commands[2]);
+                    }
+                    else {
+                        SubwayController.printRoute(
+                                contr1,
+                                commands[2],
+                                contr2,
+                                commands[4]);
+                    }
                 } else {
                     System.out.println("Invalid command.");
                 }

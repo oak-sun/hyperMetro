@@ -320,6 +320,148 @@ files:
 - name: test/baltimore.json
   visible: false
   learner_created: false
+- name: src/metro/SubwayController.java
+  visible: true
+  text: |
+    package metro;
+
+    import lombok.Getter;
+    import lombok.Setter;
+    import java.util.Optional;
+
+    @Getter
+    public class SubwayController {
+        private final String name;
+        private final Station depot;
+
+        public SubwayController(String name) {
+            this.name = name;
+            this.depot = new Station("depot");
+            this.depot.setNext(this.depot);
+            this.depot.setPrevious(this.depot);
+        }
+
+        public void append(String name) {
+            var prev =
+                    this.depot.getPrevious();
+            var newSt = new Station(name);
+            prev.setNext(newSt);
+            this.depot.setPrevious(newSt);
+            newSt.setPrevious(prev);
+            newSt.setNext(depot);
+        }
+        private Optional<Station> getStation(String name) {
+            var currentSt =
+                    this.depot.getNext();
+            while (currentSt != this.depot) {
+                if (currentSt.getName().equals(name)) {
+                    return Optional.of(currentSt);
+                }
+                currentSt = currentSt.getNext();
+            }
+            return Optional.empty();
+        }
+
+        public boolean remove(String name) {
+            var candidate =
+                    getStation(name);
+            if (candidate.isPresent()) {
+                var prev =
+                        candidate.get().getPrevious();
+                var next =
+                        candidate.get().getNext();
+                prev.setNext(next);
+                next.setPrevious(prev);
+                candidate
+                        .get()
+                        .getTransfer()
+                        .ifPresent(s -> s.setTransfer(null));
+                return true;
+            } else {
+                return false;
+            }
+        }
+        public void addHead(String name) {
+            var next =
+                    this.depot.getNext();
+            var newSt = new Station(name);
+            next.setPrevious(newSt);
+            this.depot.setNext(newSt);
+            newSt.setPrevious(this.depot);
+            newSt.setNext(next);
+        }
+
+        public void addTransfer(String name,
+                                SubwayController controller,
+                                String transfer) {
+            var candidate =
+                    getStation(name);
+            var otherCandidate =
+                    controller.getStation(transfer);
+            if (candidate.isPresent() &&
+                    otherCandidate.isPresent()) {
+                var station =
+                        candidate.get();
+                var transferStation =
+                        otherCandidate.get();
+                station.setTransfer(transferStation);
+            }
+        }
+
+        public void print() {
+            var current =
+                    this.depot;
+            System.out.println(current.getName());
+            if (current.getNext() == this.depot) {
+                return;
+            }
+            current = current.getNext();
+            while (current != this.depot) {
+                if (current.getTransfer().isPresent()) {
+                    System.out.printf(
+                            "%s - %s - (%s)%n",
+                            current.getName(),
+                            current
+                                    .getTransfer()
+                                    .get()
+                                    .getName(),
+                            current
+                                    .getTransfer()
+                                    .get()
+                                    .getLineName());
+                } else {
+                    System.out.println(current.getName());
+                }
+                current = current.getNext();
+            }
+            System.out.println(current.getName());
+        }
+
+        @Getter
+        @Setter
+        private class Station {
+            private final String name;
+            private Station previous;
+            private Station next;
+            private Station transfer;
+            private Station(String name) {
+                this.name = name;
+                this.previous = null;
+                this.next = null;
+                this.transfer = null;
+            }
+            public String getLineName() {
+                return SubwayController.this.name;
+            }
+            public Optional<Station> getTransfer() {
+                return Optional.ofNullable(this.transfer);
+            }
+        }
+    }
+  learner_created: true
 feedback_link: https://hyperskill.org/learn/step/10344#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Sun, 06 Nov 2022 10:20:53 UTC
 record: -1
