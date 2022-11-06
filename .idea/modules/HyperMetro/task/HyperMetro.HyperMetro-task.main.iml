@@ -8,6 +8,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" scope="PROVIDED" name="Gradle: org.projectlombok:lombok:1.18.24" level="project" />
     <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.10" level="project" />
   </component>
 </module>

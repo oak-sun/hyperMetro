@@ -1,130 +1,154 @@
 package metro;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonParser;
+
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class Main {
-    static Scanner sc = new Scanner(System.in);
-    static String[] errorMsg = {
-            "Error! Such a file doesn't exist!",
-            "Incorrect file",
-            "Invalid command"
-    };
+    public static void main(String[] args) {
+        loadMap(args[0]).ifPresent(Main::parse);
+    }
 
-    static List<String> commList = List.of("/add",
-            "/append",
-            "/add-head",
-            "/remove",
-            "/output");
-    static Pattern pattern = Pattern
-            .compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
-    static HashMap<String, LinkedList<String>> lineMap = new HashMap<>();
-
-    public static void main(String[] args)  {
-        try (var br = Files.newBufferedReader(
-                Paths.get(args[0]), StandardCharsets.UTF_8)) {
-            loadMap(new Gson().fromJson(br, new TypeToken<HashMap<String,
-                            HashMap<Integer, String>>>(){}.getType()
-            ));
-            List<String> params = input();
-            while (!"/exit".equals(params.get(0))) {
-                if (!commList.contains(params.get(0))) {
-                    printError(2);
-                    params = input();
-                    continue;
-                }
-                try {
-                    switch (params.get(0)) {
-                        case "/add", "/append" -> append(params.get(1),
-                                params.get(2));
-                        case "/add-head" -> addHead(params.get(1),
-                                params.get(2));
-                        case "/remove" -> remove(params.get(1),
-                                params.get(2));
-                        case "/output" -> output(params.get(1));
+    private static Optional<LinkedHashMap<String, SubwayController>>
+                                             loadMap(String path) {
+        var file = Paths.get(path);
+        if (Files.notExists(file)) {
+            System.out.println(
+                    "Error! Such a file doesn't exist!");
+            return Optional.empty();
+        } else {
+            try {
+                var br =
+                        Files.newBufferedReader(file);
+                var jsO =
+                        JsonParser.parseReader(br).getAsJsonObject();
+                LinkedHashMap<String, SubwayController> lineMap =
+                        new LinkedHashMap<>();
+                ArrayList<String[]> transfersList =
+                        new ArrayList<>();
+                for (var obj: jsO.entrySet()) {
+                    var line =
+                            obj.getKey().replace("\"", "");
+                    var controller = new SubwayController(line);
+                    for (var e : obj
+                            .getValue()
+                            .getAsJsonObject()
+                            .entrySet()) {
+                        var station = e
+                                .getValue()
+                                .getAsJsonObject()
+                                .getAsJsonPrimitive("name")
+                                .getAsString()
+                                .replace("\"", "");
+                        controller.append(station);
+                        var transfer = e
+                                .getValue()
+                                .getAsJsonObject()
+                                .getAsJsonArray("transfer");
+                        if (transfer.size() != 0) {
+                            var transferLine = transfer
+                                    .get(0)
+                                    .getAsJsonObject()
+                                    .get("line")
+                                    .getAsString()
+                                    .replace("\"", "");
+                            var transferSt = transfer
+                                    .get(0)
+                                    .getAsJsonObject()
+                                    .get("station")
+                                    .getAsString()
+                                    .replace("\"", "");
+                            transfersList.add(new String[]{
+                                    line,
+                                    station,
+                                    transferLine,
+                                    transferSt});
+                        }
                     }
-                } catch (Exception e) {
-                    printError(2);
+                    lineMap.put(line, controller);
                 }
-                params = input();
+                for (String[] data : transfersList) {
+                    lineMap.get(data[0]).addTransfer(
+                            data[1],
+                            lineMap.get(data[2]),
+                            data[3]);
+                }
+                return Optional.of(lineMap);
+            } catch (IOException e) {
+                System.out.println("Incorrect file.");
+                return Optional.empty();
             }
-        } catch (IOException e) {
-            printError(0);
-        } catch (JsonSyntaxException e) {
-            printError(1);
         }
     }
-    static void loadMap(HashMap<String, HashMap<Integer, String>> raws) {
-        for (var e : raws.keySet()) {
-            HashMap<Integer, String> map = raws.get(e);
-            LinkedList<String> line = new LinkedList<>();
-            for (int i = 1; i <= map.size(); i++) {
-                line.add(map.get(i));
-            }
-            lineMap.put(e, line);
-        }
-    }
-    static void printError(int i) {
-        System.out.println(errorMsg[i]);
-    }
-    private static List<String> input() {
-        List<String> matchers = new ArrayList<>();
-        var m = pattern.matcher(sc.nextLine());
-        while (m.find()) {
-            if (m.group(1) != null) {
-                matchers.add(m.group(1));
-            } else if (m.group(2) != null) {
-                matchers.add(m.group(2));
+
+    private static void parse(LinkedHashMap<String, SubwayController> lineMap) {
+        var sc = new Scanner(System.in);
+        while (true) {
+            var input = sc.nextLine();
+            if ("/exit".equals(input)) {
+                break;
             } else {
-                matchers.add(m.group());
+                List<String> parseList = new ArrayList<>();
+                var m = Pattern
+                        .compile("([^\"]\\S*|\".+?\")\\s*")
+                        .matcher(input);
+                while (m.find())
+                    parseList
+                            .add(m.group(1)
+                            .replace("\"", ""));
+                var commands =  parseList.toArray(String[]::new);
+                if (commands.length == 2 &&
+                        "/output".equals(commands[0])) {
+                    if (lineMap.containsKey(commands[1])) {
+                        lineMap.get(commands[1]).print();
+                    } else {
+                        System.out.println("Invalid command.");
+                    }
+                } else if (commands.length == 3 &&
+                        lineMap.containsKey(commands[1])) {
+                    var line = lineMap.get(commands[1]);
+                    switch (commands[0]) {
+                        case "/append" ->
+                                line.append(commands[2]);
+                        case "/add-head" ->
+                                line.addHead(commands[2]);
+                        case "/remove" ->
+                        {
+                            if (!line.remove(commands[2])) {
+                                System.out.println(
+                                        "Invalid command.");
+                            }
+                        }
+                        default -> System.out.println(
+                                "Invalid command.");
+                    }
+                } else if (commands.length == 5
+                        && "/connect".equals(commands[0])
+                        && lineMap.containsKey(commands[1])
+                        && lineMap.containsKey(commands[3])) {
+                    var contr1 = lineMap.get(commands[1]);
+                    var contr2 = lineMap.get(commands[3]);
+                    contr1.addTransfer(
+                            commands[2],
+                            contr2,
+                            commands[4]);
+                    contr2.addTransfer(
+                            commands[4],
+                            contr1,
+                            commands[2]);
+
+                } else {
+                    System.out.println("Invalid command.");
+                }
             }
         }
-        return matchers;
-    }
-
-    private static void output(String rfrnc) {
-        LinkedList<String> line = lineMap.get(rfrnc);
-        String str1 = "depot",
-                str2 = line.get(0),
-                str3;
-
-        for (int i = 1; i < line.size(); i++) {
-            str3 = line.get(i);
-            System.out.printf("%s - %s - %s\n",
-                    str1,
-                    str2,
-                    str3);
-            str1 = str2;
-            str2 = str3;
-        }
-        System.out.printf("%s - %s - %s\n",
-                str1,
-                str2,
-                "depot");
-    }
-    private static void append(String rfrnc,
-                               String station) {
-        lineMap.get(rfrnc).addLast(station);
-    }
-
-    private static void addHead(String rfrnc,
-                                String station) {
-        lineMap.get(rfrnc).addFirst(station);
-    }
-
-    private static void remove(String rfrnc,
-                               String station) {
-        lineMap.get(rfrnc).remove(station);
     }
 }

@@ -30,6 +30,11 @@ subprojects {
     dependencies {
         implementation 'com.google.code.gson:gson:+'
         testImplementation 'com.github.hyperskill:hs-test:release-SNAPSHOT'
+        compileOnly 'org.projectlombok:lombok:1.18.24'
+        annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+        testCompileOnly 'org.projectlombok:lombok:1.18.24'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
     }
 
     configurations.all {
